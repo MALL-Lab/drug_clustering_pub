@@ -1,0 +1,33 @@
+name: sc
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.11
+  - numpy=1.23.5
+  - numba=0.57.1
+  - scanpy=1.9.6
+  - decoupler-py=1.6.0
+  - scipy=1.11.1
+  - pydeseq2
+  - plotnine
+  - harmonypy
+  - leidenalg
+  - muon=0.1.5
+  - matplotlib[version='<3.7']
+  - seaborn
+  - statsmodels=0.14.0
+  - scikit-bio
+  - scvi-tools
+  - pytorch
+  - pip
+  - pyarrow
+  - fastparquet
+  - ca-certificates
+  - certifi
+  - openssl
+  - plotly
+  - decoupler
+  - duckdb
+prefix: /mnt/netapp2/Store_uni/home/ulc/co/mao/SOFTWARE/miniconda3/envs/sc
