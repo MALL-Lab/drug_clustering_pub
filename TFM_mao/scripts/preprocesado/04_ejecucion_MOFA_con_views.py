@@ -3,7 +3,7 @@ import os
 import sys
 
 INPUT_PARQUET_ORIGINAL = "/mnt/netapp2/Store_uni/home/ulc/co/mao/TFM_final/datos/datos_con_placa_14/datos_normalizados_protein_coding.parquet"
-OUTPUT_PARQUET_TIDY = "/mnt/netapp2/Store_uni/home/ulc/co/mao/TFM_final/datos/datos_con_placa_14/tidy_final.parquet"
+OUTPUT_PARQUET_TIDY = "/mnt/netapp2/Store_uni/home/ulc/co/mao/TFM_final/datos/datos_con_placa_14/tidy_final_sin_groups.parquet"
 TMP_DIR = "/mnt/lustre/scratch/nlsas/home/ulc/co/mao/tmp"
 
 def generate_mofa_tidy_parquet(input_path: str, output_path: str):
@@ -31,7 +31,7 @@ def generate_mofa_tidy_parquet(input_path: str, output_path: str):
                 CAST(gene_name AS VARCHAR) AS feature,
                 TRY_CAST(log2FoldChange AS FLOAT) AS value,
                 REPLACE(CAST("Cell_Name_Vevo" AS VARCHAR), '/', '_') AS view,
-                CONCAT(drug, '_', CAST(concentration AS VARCHAR), '__', CAST(plate AS VARCHAR)) AS sample
+                CONCAT(drug, '_', CAST(concentration AS VARCHAR),'_' ,CAST(plate AS VARCHAR)) AS sample 
             FROM read_parquet('{input_path}', union_by_name=true)
             WHERE 
                 gene_name IS NOT NULL

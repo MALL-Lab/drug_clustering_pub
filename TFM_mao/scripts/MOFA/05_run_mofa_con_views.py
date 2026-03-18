@@ -5,8 +5,8 @@ import numpy as np
 from mofapy2.run.entry_point import entry_point
 
 # --- CONFIGURACIÓN DE RUTAS ---
-INPUT_PARQUET_TIDY = "/mnt/netapp2/Store_uni/home/ulc/co/mao/TFM_final/datos/datos_con_placa_14/tidy_final.parquet"
-OUTPUT_DIR ="/mnt/lustre/scratch/nlsas/home/ulc/co/mao/modelo_prueba_final_fast_convergence"
+INPUT_PARQUET_TIDY = "/mnt/netapp2/Store_uni/home/ulc/co/mao/TFM_final/datos/datos_con_placa_14/tidy_final_sin_groups.parquet"
+OUTPUT_DIR ="/mnt/lustre/scratch/nlsas/home/ulc/co/mao/modelo_prueba_final_fast_convergence_sin_groups"
 
 
 def run_mofa(df, n_factors, output_path):
@@ -28,6 +28,7 @@ def run_mofa(df, n_factors, output_path):
     # Usamos drop_duplicates para ser eficientes
     sample_metadata = df[['sample']].drop_duplicates()
     samples_names = sample_metadata['sample'].tolist()
+   
 
     
     print(f"   -> Muestras detectadas: {len(samples_names)}")
@@ -55,7 +56,7 @@ def run_mofa(df, n_factors, output_path):
     # 5. Configuración del Entrenamiento
     ent.set_train_options(
         convergence_mode="fast",
-	iter = 100, 
+	iter=1000, 
         gpu_mode=False,
         seed=2024, 
         save_interrupted=True
@@ -101,7 +102,7 @@ if __name__ == "__main__":
 
 
     # Bucle de Entrenamiento
-    factores_a_probar = [25,30]
+    factores_a_probar = [30]
 
     for k in factores_a_probar:
         print(f"\n=============================================")
