@@ -52,11 +52,12 @@ def run_mofa(df, n_factors, output_path):
 
     # 5. Configuración del Entrenamiento
     ent.set_train_options(
-        convergence_mode="fast",
-	iter = 100, 
+        convergence_mode="slow",
+	    iter = 1000, 
         gpu_mode=False,
         seed=2024, 
-        save_interrupted=True
+        save_interrupted=True,
+        verbose=True
     )
 
     # 6. Construir y ejecutar
@@ -84,7 +85,7 @@ if __name__ == "__main__":
         # --- OPTIMIZACIÓN CRÍTICA DE RAM ---
         # Convertimos columnas de texto repetitivo a 'category'
         # Esto reduce el uso de memoria drásticamente (de GBs a MBs para estas columnas)
-        cols_to_categorical = ['sample', 'feature', 'view']
+        cols_to_categorical = ['sample', 'feature', 'group']
         for col in cols_to_categorical:
             if col in tidy_df.columns:
                 tidy_df[col] = tidy_df[col].astype('category')

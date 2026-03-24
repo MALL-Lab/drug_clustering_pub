@@ -146,7 +146,7 @@ def aplicar_filtro_hibrido(input_parquet: str, output_parquet: str):
     print(final_lines)
 
 if __name__ == "__main__":
-    INPUT_PATH = "/mnt/netapp2/Store_uni/home/ulc/co/mao/TFM_final/datos/datos_con_placa_14/tidy_final.parquet"
-    OUTPUT_PATH = "/mnt/netapp2/Store_uni/home/ulc/co/mao/TFM_final/datos/datos_con_placa_14/tidy_final.parquet"
+    INPUT_PATH = "/mnt/netapp2/Store_uni/home/ulc/co/mao/TFM_final/datos_recalculados/datos_protein_coding.parquet"
+    OUTPUT_PATH = "/mnt/netapp2/Store_uni/home/ulc/co/mao/TFM_final/datos_recalculados/datos_normalizados_protein_coding.parquet"
     
     aplicar_filtro_hibrido(INPUT_PATH, OUTPUT_PATH)

@@ -5,8 +5,8 @@ import numpy as np
 from mofapy2.run.entry_point import entry_point
 
 # --- CONFIGURACIÓN DE RUTAS ---
-INPUT_PARQUET_TIDY = "/mnt/netapp2/Store_uni/home/ulc/co/mao/TFM_final/datos/datos_con_placa_14/tidy_final_sin_groups.parquet"
-OUTPUT_DIR ="/mnt/lustre/scratch/nlsas/home/ulc/co/mao/modelo_prueba_final_fast_convergence_sin_groups"
+INPUT_PARQUET_TIDY = '/mnt/netapp2/Store_uni/home/ulc/co/mao/TFM_final/datos/datos_con_placa_14/tidy_final_sin_groups.parquet'
+OUTPUT_DIR ="/mnt/lustre/scratch/nlsas/home/ulc/co/mao/mofa"
 
 
 def run_mofa(df, n_factors, output_path):
@@ -28,8 +28,8 @@ def run_mofa(df, n_factors, output_path):
     # Usamos drop_duplicates para ser eficientes
     sample_metadata = df[['sample']].drop_duplicates()
     samples_names = sample_metadata['sample'].tolist()
-   
-
+    
+    
     
     print(f"   -> Muestras detectadas: {len(samples_names)}")
 
@@ -42,7 +42,8 @@ def run_mofa(df, n_factors, output_path):
     )
  
     ent.set_data_options(
-        scale_views=True, 
+        scale_views=True,
+
     )
 
     # 4. Configuración del Modelo
@@ -55,11 +56,13 @@ def run_mofa(df, n_factors, output_path):
 
     # 5. Configuración del Entrenamiento
     ent.set_train_options(
-        convergence_mode="fast",
-	iter=1000, 
+        convergence_mode="slow",
+	iter=1000,
+ 
         gpu_mode=False,
         seed=2024, 
-        save_interrupted=True
+        save_interrupted=True,
+	
     )
 
     # 6. Construir y ejecutar
@@ -83,11 +86,13 @@ if __name__ == "__main__":
     try:
         # Carga normal
         tidy_df = pd.read_parquet(INPUT_PARQUET_TIDY)
+       
+
         
-        # --- OPTIMIZACIÓN CRÍTICA DE RAM ---
         # Convertimos columnas de texto repetitivo a 'category'
         # Esto reduce el uso de memoria drásticamente (de GBs a MBs para estas columnas)
         cols_to_categorical = ['sample', 'feature', 'view']
+        
         for col in cols_to_categorical:
             if col in tidy_df.columns:
                 tidy_df[col] = tidy_df[col].astype('category')
@@ -102,7 +107,7 @@ if __name__ == "__main__":
 
 
     # Bucle de Entrenamiento
-    factores_a_probar = [30]
+    factores_a_probar = [15]
 
     for k in factores_a_probar:
         print(f"\n=============================================")

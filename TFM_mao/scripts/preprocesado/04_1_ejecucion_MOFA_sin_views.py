@@ -30,8 +30,8 @@ def generate_mofa_tidy_parquet(input_path: str, output_path: str):
             SELECT
                 CAST(gene_name AS VARCHAR) AS feature,
                 TRY_CAST(log2FoldChange AS FLOAT) AS value,
-		CAST("Cell_Name_Vevo" AS VARCHAR) AS view,
-                CONCAT(drug, '_', CAST(concentration AS VARCHAR), '__', CAST(plate AS VARCHAR),'__', CAST("Cell_Name_Vevo" AS VARCHAR)) AS sample
+		        CAST("Cell_Name_Vevo" AS VARCHAR) AS 'group',
+                CONCAT(drug, '_', CAST(concentration AS VARCHAR), '_', CAST(plate AS VARCHAR)) AS sample
             FROM read_parquet('{input_path}', union_by_name=true)
             WHERE 
                 gene_name IS NOT NULL
