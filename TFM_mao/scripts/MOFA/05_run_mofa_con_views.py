@@ -56,9 +56,8 @@ def run_mofa(df, n_factors, output_path):
 
     # 5. Configuración del Entrenamiento
     ent.set_train_options(
-        convergence_mode="slow",
-	iter=1000,
- 
+        convergence_mode="fast",
+	iter=100,
         gpu_mode=False,
         seed=2024, 
         save_interrupted=True,
@@ -91,7 +90,7 @@ if __name__ == "__main__":
         
         # Convertimos columnas de texto repetitivo a 'category'
         # Esto reduce el uso de memoria drásticamente (de GBs a MBs para estas columnas)
-        cols_to_categorical = ['sample', 'feature', 'view']
+        cols_to_categorical = ['sample', 'feature', 'view','group']
         
         for col in cols_to_categorical:
             if col in tidy_df.columns:
@@ -107,7 +106,7 @@ if __name__ == "__main__":
 
 
     # Bucle de Entrenamiento
-    factores_a_probar = [15]
+    factores_a_probar = [30]
 
     for k in factores_a_probar:
         print(f"\n=============================================")
