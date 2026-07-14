@@ -3,10 +3,9 @@ import pandas as pd
 import re
 import os
 
-# --- 1. CONFIGURACIÓN ---
-MIN_CELLS = 50  # Mínimo de células por condición individual
 
-# --- 2. LISTA DE EXCLUSIÓN MANUAL (BLACKLIST) ---
+
+# --- 1. LISTA DE EXCLUSIÓN MANUAL (BLACKLIST) ---
 # Se eliminan basándose en Zhang et al. (2025) por baja representación/robustez
 BLACKLIST_MANUAL = [
     "NCI-H661", 
@@ -41,8 +40,7 @@ def aplicar_filtro_hibrido(input_parquet: str, output_parquet: str):
 
     print(f" Procesando {input_parquet}...")
     print(f" Reglas de Filtrado:")
-    print(f"   1. Mínimo células/pocillo: >= {MIN_CELLS}")
-    print(f"   2. Exclusión Manual (Bibliografía): {BLACKLIST_MANUAL}")
+    print(f"   1. Exclusión Manual (Bibliografía): {BLACKLIST_MANUAL}")
 
     # -------------------------------------------------------------------------
     # PASO 1: DIAGNÓSTICO DE ACUMULADO (Justificación del borrado manual)
@@ -78,9 +76,6 @@ def aplicar_filtro_hibrido(input_parquet: str, output_parquet: str):
     
     df_diag = duckdb.query(query_diag).df()
     
-    # Mostramos las 15 líneas con menos células para ver si las manuales están ahí
-    print("\n LÍNEAS CON MENOS CÉLULAS ACUMULADAS (Las manuales deberían aparecer aquí):")
-    print(df_diag.head(15).to_string(index=False))
 
     # -------------------------------------------------------------------------
     # PASO 2: GUARDADO FINAL
@@ -105,14 +100,10 @@ def aplicar_filtro_hibrido(input_parquet: str, output_parquet: str):
                 d.cell_clean AS "Cell_Name_Vevo"
             FROM data_normalized d
             WHERE
-                -- 2. Filtro de Calidad Fila (Mínimo de células)
-                d.n_cells_trt >= {MIN_CELLS}
-                AND d.n_cells_ctrl >= {MIN_CELLS}
-                
-                -- 3. Filtro Manual Bibliográfico
-                AND d.cell_clean NOT IN ({blacklist_sql})
+                -- 1. Filtro Manual Bibliográfico
+                d.cell_clean NOT IN ({blacklist_sql})
 
-                -- 3. OPTIMIZACIÓN DE ESPACIO
+                -- 2. OPTIMIZACIÓN DE ESPACIO
                 AND d.Log2FoldChange IS NOT NULL  
         )
         TO '{output_parquet}' (FORMAT PARQUET);

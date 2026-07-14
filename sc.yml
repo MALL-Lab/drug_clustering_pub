@@ -1,4 +1,4 @@
-name: sc
+name: sc_env
 channels:
   - conda-forge
   - bioconda
