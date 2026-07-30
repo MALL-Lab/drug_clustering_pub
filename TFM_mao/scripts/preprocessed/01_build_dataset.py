@@ -8,28 +8,28 @@ OUT_FILE = "/mnt/netapp2/Store_uni/home/ulc/co/mao/TFM_final/datos/datos_complet
 
 os.makedirs(OUT_DIR, exist_ok=True)
 
-# Limitar memoria y threads de DuckDB
+# Limit DuckDB memory and threads
 con = duckdb.connect()
 con.execute("SET threads=2")
 con.execute("SET memory_limit='50GB'")
 con.execute(f"SET temp_directory='{OUT_DIR}'")
 
-# Paso 1: placas conocidas sin leer todo el dataset
-todas_las_placas = list(range(1, 15))
+# Step 1: known plates, without reading the entire dataset
+all_plates = list(range(1, 15))
 
-# Saltar placas ya procesadas
-placas_hechas = set(
+# Skip plates already processed
+done_plates = set(
     int(f.split('plate_')[1].replace('.parquet', ''))
     for f in glob.glob(os.path.join(OUT_DIR, 'plate_*.parquet'))
 )
-placas_pendientes = [p for p in todas_las_placas if p not in placas_hechas]
-print(f"Placas ya hechas: {sorted(placas_hechas)}")
-print(f"Placas pendientes: {placas_pendientes}")
+pending_plates = [p for p in all_plates if p not in done_plates]
+print(f"Plates already done: {sorted(done_plates)}")
+print(f"Pending plates: {pending_plates}")
 
-# Paso 2: Procesar una placa a la vez
-for plate in placas_pendientes:
+# Step 2: Process one plate at a time
+for plate in pending_plates:
     out_plate = os.path.join(OUT_DIR, f"plate_{plate}.parquet")
-    print(f"Procesando placa {plate}...")
+    print(f"Processing plate {plate}...")
     try:
         con.execute(f"""
             COPY (
@@ -40,19 +40,19 @@ for plate in placas_pendientes:
             )
             TO '{out_plate}' (FORMAT PARQUET, COMPRESSION 'snappy')
         """)
-        print(f"  Placa {plate} completada")
+        print(f"  Plate {plate} completed")
     except Exception as e:
-        print(f"  ERROR en placa {plate}: {e}")
+        print(f"  ERROR on plate {plate}: {e}")
         continue
 
-# Paso 3: Unir solo si todas las placas están procesadas
-placas_hechas_final = set(
+# Step 3: Merge only if all plates have been processed
+final_done_plates = set(
     int(f.split('plate_')[1].replace('.parquet', ''))
     for f in glob.glob(os.path.join(OUT_DIR, 'plate_*.parquet'))
 )
 
-if len(placas_hechas_final) == len(todas_las_placas):
-    print("Uniendo todas las placas...")
+if len(final_done_plates) == len(all_plates):
+    print("Merging all plates...")
     plates_path = os.path.join(OUT_DIR, "plate_*.parquet")
     con.execute(f"""
         COPY (
@@ -60,9 +60,9 @@ if len(placas_hechas_final) == len(todas_las_placas):
         )
         TO '{OUT_FILE}' (FORMAT PARQUET, COMPRESSION 'snappy')
     """)
-    print(f"Listo: {OUT_FILE}")
+    print(f"Done: {OUT_FILE}")
 else:
-    print(f"Faltan placas: {set(todas_las_placas) - placas_hechas_final}")
-    print("Ejecuta el script de nuevo para continuar")
+    print(f"Missing plates: {set(all_plates) - final_done_plates}")
+    print("Run the script again to continue")
 
 con.close()

@@ -11,20 +11,20 @@ def generate_mofa_tidy_parquet(input_path: str, output_path: str):
     con = db.connect()
     con.execute(f"SET temp_directory='{TMP_DIR}'")
 
-    print("-> Verificando duplicados...")
+    print("-> Checking for duplicates...")
     check = con.query(f"""
         SELECT 
             COUNT(*) as total, 
             COUNT(*) - COUNT(DISTINCT 
                 CONCAT(gene_name, '||', "Cell_Name_Vevo", '||', drug, '||', 
                        CAST(concentration AS VARCHAR), '||', CAST(plate AS VARCHAR))
-            ) as duplicados
+            ) as duplicates
         FROM read_parquet('{input_path}')
     """).df()
-    print(f"   Total filas: {check['total'][0]:,}")
-    print(f"   Duplicados: {check['duplicados'][0]:,}")
+    print(f"   Total rows: {check['total'][0]:,}")
+    print(f"   Duplicates: {check['duplicates'][0]:,}")
 
-    print("-> Ejecutando consulta de transformación Tidy con DuckDB...")
+    print("-> Running Tidy transformation query with DuckDB...")
     con.query(f"""
         COPY (
             SELECT
@@ -43,10 +43,10 @@ def generate_mofa_tidy_parquet(input_path: str, output_path: str):
         )
         TO '{output_path}' (FORMAT PARQUET, COMPRESSION 'ZSTD');
     """)
-    print(f"✓ Guardado completo del Parquet Tidy en: {output_path}")
+    print(f"✓ Tidy Parquet fully saved to: {output_path}")
 
-    # Comprobación de duplicados en el archivo TIDY
-    print("\n-> Verificando duplicados en archivo TIDY...")
+    # Check for duplicates in the TIDY file
+    print("\n-> Checking for duplicates in the TIDY file...")
     result = con.query(f"""
         SELECT 
             sample, view, feature, COUNT(*) as count
@@ -55,15 +55,14 @@ def generate_mofa_tidy_parquet(input_path: str, output_path: str):
         HAVING COUNT(*) > 1
         ORDER BY count DESC
     """).df()
-    
     if len(result) == 0:
-        print("✓ NO hay duplicados - Safe para MOFA")
+        print("✓ NO duplicates found - Safe for MOFA")
     else:
-        print(f"⚠ HAY {len(result)} combinaciones duplicadas:")
+        print(f"⚠ FOUND {len(result)} duplicate combinations:")
         print(result)
 
-    # Estadísticas generales
-    print("\n-> Estadísticas del archivo TIDY:")
+    # General statistics
+    print("\n-> TIDY file statistics:")
     stats = con.query(f"""
         SELECT 
             COUNT(*) as total_rows,
@@ -79,8 +78,7 @@ def generate_mofa_tidy_parquet(input_path: str, output_path: str):
 
 if __name__ == "__main__":
     if not os.path.exists(INPUT_PARQUET_ORIGINAL):
-        print(f"ERROR: Archivo de origen no encontrado en {INPUT_PARQUET_ORIGINAL}")
+        print(f"ERROR: Source file not found at {INPUT_PARQUET_ORIGINAL}")
         sys.exit(1)
-    
     generate_mofa_tidy_parquet(INPUT_PARQUET_ORIGINAL, OUTPUT_PARQUET_TIDY)
-    print("\n✓ Proceso completado!")
+    print("\n✓ Process completed!")

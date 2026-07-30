@@ -5,15 +5,15 @@ import os
 
 
 
-# --- 1. LISTA DE EXCLUSIÓN MANUAL (BLACKLIST) ---
-# Se eliminan basándose en Zhang et al. (2025) por baja representación/robustez
+# --- 1. MANUAL EXCLUSION LIST (BLACKLIST) ---
+# Removed based on Zhang et al. (2025) due to low representation/robustness
 BLACKLIST_MANUAL = [
     "NCI-H661", 
     "NCI-H596", 
     "NCI-H2122"
 ]
 
-# Diccionario de caracteres griegos
+# Greek character dictionary
 GREEK_MAP = {
     "α": "alpha", "β": "beta", "γ": "gamma", "δ": "delta",
     "ε": "epsilon", "ζ": "zeta", "η": "eta", "θ": "theta",
@@ -32,20 +32,20 @@ def generate_greek_replace_sql(column_name):
         sql_string = f"REPLACE({sql_string}, '{greek}', '{upper_latin}')"
     return sql_string
 
-def aplicar_filtro_hibrido(input_parquet: str, output_parquet: str):
+def apply_hybrid_filter(input_parquet: str, output_parquet: str):
     drug_normalized_sql = generate_greek_replace_sql('drug')
     
-    # Preparamos la lista para SQL
+    # Prepare the list for SQL
     blacklist_sql = ", ".join([f"'{x}'" for x in BLACKLIST_MANUAL])
 
-    print(f" Procesando {input_parquet}...")
-    print(f" Reglas de Filtrado:")
-    print(f"   1. Exclusión Manual (Bibliografía): {BLACKLIST_MANUAL}")
+    print(f" Processing {input_parquet}...")
+    print(f" Filtering rules:")
+    print(f"   1. Manual exclusion (literature): {BLACKLIST_MANUAL}")
 
     # -------------------------------------------------------------------------
-    # PASO 1: DIAGNÓSTICO DE ACUMULADO (Justificación del borrado manual)
+    # STEP 1: CUMULATIVE DIAGNOSTIC (Justification for manual removal)
     # -------------------------------------------------------------------------
-    print("\n DIAGNÓSTICO: Verificando 'Total de células acumuladas' por línea...")
+    print("\n DIAGNOSTIC: Checking 'total accumulated cells' per line...")
     
     query_diag = f"""
         WITH data_prep AS (
@@ -58,29 +58,29 @@ def aplicar_filtro_hibrido(input_parquet: str, output_parquet: str):
         metrics AS (
             SELECT 
                 cell_clean,
-                COUNT(*) as total_condiciones,
-                -- Sumamos todas las células usadas en todos los experimentos de esta línea
-                SUM(n_cells_trt + n_cells_ctrl) as total_celulas_historico
+                COUNT(*) as total_conditions,
+                -- Sum all cells used across all experiments for this line
+                SUM(n_cells_trt + n_cells_ctrl) as total_historical_cells
             FROM data_prep
             GROUP BY cell_clean
         )
         SELECT 
             *,
             CASE 
-                WHEN cell_clean IN ({blacklist_sql}) THEN 'ELIMINADO (Manual)'
-                ELSE 'ACEPTADO'
-            END as estado
+                WHEN cell_clean IN ({blacklist_sql}) THEN 'REMOVED (Manual)'
+                ELSE 'ACCEPTED'
+            END as status
         FROM metrics
-        ORDER BY total_celulas_historico ASC;
+        ORDER BY total_historical_cells ASC;
     """
     
     df_diag = duckdb.query(query_diag).df()
     
 
     # -------------------------------------------------------------------------
-    # PASO 2: GUARDADO FINAL
+    # STEP 2: FINAL SAVE
     # -------------------------------------------------------------------------
-    print(f"\n Escribiendo archivo filtrado en: {output_parquet}...")
+    print(f"\n Writing filtered file to: {output_parquet}...")
 
     query = f"""
         COPY (
@@ -100,10 +100,10 @@ def aplicar_filtro_hibrido(input_parquet: str, output_parquet: str):
                 d.cell_clean AS "Cell_Name_Vevo"
             FROM data_normalized d
             WHERE
-                -- 1. Filtro Manual Bibliográfico
+                -- 1. Manual literature-based filter
                 d.cell_clean NOT IN ({blacklist_sql})
 
-                -- 2. OPTIMIZACIÓN DE ESPACIO
+                -- 2. SPACE OPTIMIZATION
                 AND d.Log2FoldChange IS NOT NULL  
         )
         TO '{output_parquet}' (FORMAT PARQUET);
@@ -112,32 +112,32 @@ def aplicar_filtro_hibrido(input_parquet: str, output_parquet: str):
     duckdb.query(query)
     
     # -------------------------------------------------------------------------
-    # REPORTE FINAL
+    # FINAL REPORT
     # -------------------------------------------------------------------------
     stat_query = f"""
         SELECT 
-            COUNT(*) as total_filas,
-            COUNT(DISTINCT "Cell_Name_Vevo") as lineas_unicas,
-            COUNT(DISTINCT drug) as drogas_unicas
+            COUNT(*) as total_rows,
+            COUNT(DISTINCT "Cell_Name_Vevo") as unique_lines,
+            COUNT(DISTINCT drug) as unique_drugs
         FROM read_parquet('{output_parquet}')
     """
     stats = duckdb.query(stat_query).fetchone()
     
-    # Lista de nombres
+    # List of names
     list_query = f"""SELECT DISTINCT "Cell_Name_Vevo" FROM read_parquet('{output_parquet}') ORDER BY 1"""
     final_lines = duckdb.query(list_query).df()["Cell_Name_Vevo"].tolist()
 
     print("-" * 50)
-    print(f" REPORTE FINAL:")
-    print(f"   • Total filas: {stats[0]:,}")
-    print(f"   • Líneas únicas: {stats[1]}")
-    print(f"   • Drogas únicas: {stats[2]}")
+    print(f" FINAL REPORT:")
+    print(f"   • Total rows: {stats[0]:,}")
+    print(f"   • Unique lines: {stats[1]}")
+    print(f"   • Unique drugs: {stats[2]}")
     print("-" * 50)
-    print(" LÍNEAS QUE QUEDAN EN EL DATASET:")
+    print(" LINES REMAINING IN THE DATASET:")
     print(final_lines)
 
 if __name__ == "__main__":
     INPUT_PATH = "/mnt/netapp2/Store_uni/home/ulc/co/mao/TFM_final/datos_recalculados/datos_protein_coding.parquet"
     OUTPUT_PATH = "/mnt/netapp2/Store_uni/home/ulc/co/mao/TFM_final/datos_recalculados/datos_normalizados_protein_coding.parquet"
     
-    aplicar_filtro_hibrido(INPUT_PATH, OUTPUT_PATH)
+    apply_hybrid_filter(INPUT_PATH, OUTPUT_PATH)

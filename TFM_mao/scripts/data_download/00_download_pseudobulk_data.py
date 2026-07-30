@@ -7,4 +7,4 @@ snapshot_download(
     local_dir="/mnt/lustre/scratch/nlsas/home/ulc/co/mao/pseudobulk_DE"
 )
 
-print("Descarga completada")
+print("Download completed")
