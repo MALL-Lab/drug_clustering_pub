@@ -28,16 +28,16 @@ conda activate sc
 
 ## Execution order
 
-1. `python scripts/descarga_datos/00_descarga_datos_pseudobulk.py`
-2. `python scripts/preprocesado/01_build_dataset.py`
-3. `python scripts/preprocesado/02_funcion_filtrado_genes.py`
-4. `python scripts/preprocesado/03_datos_normalizados.py`
-5. `python scripts/preprocesado/04_ejecucion_MOFA_con_views.py`
-6. `python scripts/MOFA/05_run_mofa_con_views.py`
-7. Run `notebooks/06_crear_anndata.ipynb`
-8. Run `notebooks/07_technical_batch_stadistic.ipynb`
-9. Run `notebooks/08_analisis_biológico.ipynb`
-10. Run `notebooks/09_yap_taz_priorizacion.ipynb`
+1. `python scripts/data_download/00_download_pseudobulk_data.py`
+2. `python scripts/preprocessing/01_build_dataset.py`
+3. `python scripts/preprocessing/02_gene_filtering_function.py`
+4. `python scripts/preprocessing/03_normalized_data.py`
+5. `python scripts/preprocessing/04_prepare_mofa_input.py`
+6. `python scripts/MOFA/05_run_mofa_with_views.py`
+7. Run `notebooks/06_create_anndata.ipynb`
+8. Run `notebooks/07_technical_batch_statistics.ipynb`
+9. Run `notebooks/08_biological_analysis.ipynb`
+10. Run `notebooks/09_yap_taz_prioritization.ipynb`
 
 ## Author
 
