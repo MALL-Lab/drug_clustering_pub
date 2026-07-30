@@ -5,8 +5,11 @@ Este proyecto aplica MOFA+ sobre los perfiles de expresión diferencial (pseudob
 
 ## Datos
 
-- **Fuente**: Tahoe-100M (dataset de perturbaciones farmacológicas a escala single-cell). En este proyecto se utilizan únicamente los datos de pseudobulk.
-- **Fuente**: DepMap. Los conjuntos de datos utilizados fueron PRISM y CRISPR, versión 24Q2.
+- **Fuente**: [Tahoe-100M](https://huggingface.co/datasets/tahoebio/Tahoe-100M/viewer/pseudobulk_differential_expression) 
+  (dataset de perturbaciones farmacológicas a escala single-cell). En este proyecto se utilizan 
+  únicamente los datos de pseudobulk (subset `pseudobulk_differential_expression`).
+- **Fuente**: [DepMap](https://depmap.org/portal/data_page/?tab=allData). Los conjuntos de datos 
+  utilizados fueron PRISM y CRISPR, versión 24Q2.
 - **Formato**: archivos `.h5ad`, `.parquet` y `.xlsx`.
 
 
